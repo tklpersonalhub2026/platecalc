@@ -268,7 +268,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     </div>
   </div>
 
-  <button class="reset-btn" ontouchstart="event.preventDefault()" ontouchend="resetAll()" onclick="resetAll()">Reset all fields</button>
+  <button class="reset-btn" ontouchstart="event.preventDefault()" ontouchend="resetAll()" onclick="resetAll()">Clear weight</button>
 
 </div>
 <script>
@@ -329,7 +329,7 @@ function updateLeg(tv){
 function update(){var val=parseFloat(document.getElementById("totalWeight").value)||0;for(var i=0;i<BARS.length;i++)updateCol(BARS[i],val);updateLeg(val);}
 function saveInv(){try{var obj={};for(var i=0;i<INV_IDS.length;i++)obj[INV_IDS[i]]=document.getElementById(INV_IDS[i]).textContent;localStorage.setItem("pc_inv_ipad",JSON.stringify(obj));}catch(e){}}
 function loadInv(){try{var saved=localStorage.getItem("pc_inv_ipad");if(!saved)return;var obj=JSON.parse(saved);for(var i=0;i<INV_IDS.length;i++)if(obj[INV_IDS[i]]!==undefined)document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];}catch(e){}}
-function resetAll(){document.getElementById("totalWeight").value="";for(var i=0;i<INV_IDS.length;i++)document.getElementById(INV_IDS[i]).textContent=INV_DEFS[i];saveInv();update();}
+function resetAll(){document.getElementById("totalWeight").value="";update();}
 function stepUp(e){if(e)e.preventDefault();var el=document.getElementById("totalWeight");el.value=(parseFloat(el.value)||0)+5;update();}
 function stepDn(e){if(e)e.preventDefault();var el=document.getElementById("totalWeight");el.value=Math.max(0,(parseFloat(el.value)||0)-5);update();}
 var btnUp=document.getElementById("btnUp"),btnDn=document.getElementById("btnDn");
