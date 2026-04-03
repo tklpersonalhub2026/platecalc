@@ -26,20 +26,17 @@ html { height:100%; }
 body {
   background:var(--bg); color:var(--text);
   font-family:-apple-system,'SF Pro Display','Helvetica Neue',sans-serif;
-  height:100%; display:flex; flex-direction:column;
-  overflow:hidden;
+  min-height:100%;
+  overflow-y:auto;
 }
 
 /* Full-screen app container — uses vh units to fill screen */
 .app {
-  flex:1;
   display:flex;
   flex-direction:column;
-  padding: calc(var(--safe-top) + 2vh) 3vw calc(var(--safe-bottom) + 1.5vh);
+  padding: calc(var(--safe-top) + 2vh) 3vw calc(var(--safe-bottom) + 2vh);
   gap: 1.8vh;
-  overflow:hidden;
-  height:100vh;
-  height:100dvh;
+  min-height:100dvh;
 }
 
 /* Header */
@@ -91,10 +88,10 @@ body {
 .steppers button:active { background:#ccd8f0; }
 
 /* Bar columns — flex grow to fill remaining space */
-.cols { display:grid; grid-template-columns:1fr 1fr; gap:2vw; flex:1; min-height:0; }
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:2vw; }
 .bar-col {
   background:var(--card-bg); border:2px solid var(--card-border);
-  border-radius:2vw; overflow:hidden;
+  border-radius:2vw; overflow:visible;
   display:flex; flex-direction:column;
 }
 .bar-col.active { border-color:var(--card-accent); border-width:3px; }
@@ -111,7 +108,7 @@ body {
 .sval.accent { color:var(--card-accent); }
 .sval.dim { color:#b0bcd0; font-size:3vw; font-weight:500; }
 .sval.err { color:var(--card-red); font-size:2vw; font-weight:600; }
-.plates-area { padding:1.5vh 2vw 2vh; background:#f8faff; flex:1; overflow:hidden; }
+.plates-area { padding:1.5vh 2vw 2vh; background:#f8faff; border-radius:0 0 2vw 2vw; }
 .plates-top { display:flex; align-items:center; gap:1vw; margin-bottom:1.2vh; }
 .plabel { font-size:1.5vw; color:var(--card-muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
 .badge { font-size:1.5vw; font-weight:800; padding:0.4vh 1vw; border-radius:2vw; }
