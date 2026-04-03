@@ -6,9 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Plate Calculator"/>
-
-
-
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAClElEQVR42u3dsW3DQAxAUS6RxqNknzSeyqN4rVQJ0qWzJZ1OR/J94EoDFvlwjQrFj1SoMAIBLQEtAS0BLaAloCWgJaAloAW0BLQEtAS0BLSAloCWgJaAloAW0BLQEtAS0BLQAloCWgJaAloCWkBLQEtAS0BLQAtoCWgJaAloAS0BLQEtAS0tBPr7EYeP1mn1fcaqDw13LcSz9hmZHh7qWpjP2Gdke3ioa2EevU+gBTTQQJcHPfPhoa6FeeQ+04JWLdDtb2gBDbSABhpooIEGGmiggQZaQAMtoIEGGmiggQYaaKCBFtBAC2iggQYaaKCBBhpooAV0lQHcPu8vT+e2zgfoiwbwzqI6w947H6AvGMCeZXVCfWQ+QAMNNND7z5FldUA9Yj5AJwLtdnZDAw000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQ64D++HqWPkADDTTQQAMNNNBAAw000EADnQb0338GGmg3NNBAAw000EADDTTQXn179Q000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNC5QfvGim+sLAX66NI65IYGGmigrwO9d2md8iXZZKD/L+7VYju3dT5AJx2Aau0TaAENNNBAAw000EADDbSABlpAAw000EADDTTQQAMtoIEW0EADDTTQQAMNNNBAC2igBfTkAUBdC/SofUbWIagW6uVuaKCBBhpooFcGPWsIqoV6ZJFtCKqFenQxYxhX/l699kmLSgW0gJaAloCWgBbQEtAS0BLQEtACWgJaAloCWgJaQEtAS0BLQEtAC2gJaAloCWgJaAEtAS0BLQEtAS2gJaAloCWgJaAFtAS0BLQEtICWgJaAls7uF1peuzgiHuZyAAAAAElFTkSuQmCC"/>
 <meta name="theme-color" content="#0f1117"/>
 <title>Plate Calculator</title>
@@ -22,6 +19,8 @@
   --card-bg:#ffffff; --card-border:#c8d0e0; --card-header:#e8eef8;
   --card-text:#0d1420; --card-muted:#4a5568; --card-accent:#1a6fd4;
   --card-green:#166534; --card-amber:#92400e; --card-red:#991b1b;
+  --leg-bg:#fff8f0; --leg-border:#e8d5b0; --leg-header:#f5e8cc;
+  --leg-accent:#b45309;
 }
 * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html, body {
@@ -38,11 +37,21 @@ html, body {
 .header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
 .header h1 { font-size:26px; font-weight:700; letter-spacing:-0.6px; color:var(--text); }
 .header p  { font-size:13px; color:var(--muted); margin-top:2px; }
+.header-right { display:flex; align-items:center; gap:8px; }
 .barbell-icon {
   width:44px; height:44px; border-radius:12px;
   background:rgba(79,142,247,0.15);
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
 }
+.fullscreen-btn {
+  width:44px; height:44px; border-radius:12px;
+  background:rgba(79,142,247,0.15);
+  border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  color:#4f8ef7; font-size:18px;
+  touch-action:manipulation;
+}
+.fullscreen-btn:active { background:rgba(79,142,247,0.3); }
 
 /* Input card */
 .input-card {
@@ -78,7 +87,7 @@ html, body {
 }
 .steppers button:active { background:#ccd8f0; }
 
-/* Results columns */
+/* Bar columns */
 .cols { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
 .bar-col {
   background:var(--card-bg); border:1.5px solid var(--card-border);
@@ -89,15 +98,18 @@ html, body {
   background:var(--card-header); padding:9px 11px;
   border-bottom:1px solid var(--card-border);
 }
-.col-head h2 { font-size:14px; font-weight:800; color:var(--card-text); }
-.col-head span { font-size:10px; color:var(--card-muted); }
+.col-head h2 { font-size:14px; font-weight:800; color:var(--card-text); line-height:1.2; }
+.col-head .bar-name { font-size:10px; color:var(--card-muted); margin-top:2px; font-style:italic; }
+.col-head .bar-weight { font-size:10px; color:var(--card-muted); margin-top:1px; }
 .stat { padding:8px 11px; border-bottom:1px solid #edf2fb; display:flex; flex-direction:column; gap:1px; }
 .slabel { font-size:9px; color:var(--card-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
 .sval { font-size:19px; font-weight:800; color:var(--card-text); letter-spacing:-0.3px; }
 .sval.accent { color:var(--card-accent); }
 .sval.dim { color:#b0bcd0; font-size:13px; font-weight:500; }
 .sval.err { color:var(--card-red); font-size:12px; font-weight:600; }
+.sval.leg-accent { color:var(--leg-accent); }
 .plates-area { padding:9px 11px 11px; background:#f8faff; }
+.plates-area.leg { background:#fdf5e8; }
 .plates-top { display:flex; align-items:center; gap:5px; margin-bottom:7px; }
 .plabel { font-size:9px; color:var(--card-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600; }
 .badge { font-size:9px; font-weight:800; padding:2px 6px; border-radius:20px; }
@@ -115,6 +127,26 @@ html, body {
 .chip-err  { font-size:11px; color:var(--card-red); font-weight:600; }
 .bar-only  { font-size:11px; color:var(--card-green); font-style:italic; font-weight:600; }
 .approx-note { font-size:10px; color:var(--card-amber); font-weight:600; margin-top:4px; }
+
+/* Leg developer section */
+.leg-section {
+  background:var(--leg-bg); border:1.5px solid var(--leg-border);
+  border-radius:var(--radius); overflow:hidden; margin-bottom:14px;
+}
+.leg-section.active { border-color:var(--leg-accent); }
+.leg-head {
+  background:var(--leg-header); padding:11px 14px;
+  border-bottom:1px solid var(--leg-border);
+  display:flex; align-items:center; gap:10px;
+}
+.leg-head-icon {
+  font-size:22px; flex-shrink:0;
+}
+.leg-head-text h2 { font-size:15px; font-weight:800; color:var(--card-text); }
+.leg-head-text .leg-sub { font-size:10px; color:var(--card-muted); font-style:italic; margin-top:1px; }
+
+.leg-chips-row { padding:10px 14px; border-top:1px solid #f0ddb8; }
+.leg-chips-top { display:flex; align-items:center; gap:6px; margin-bottom:7px; }
 
 /* Divider */
 .divider { height:1px; background:var(--border2); margin:18px 0; }
@@ -144,8 +176,6 @@ html, body {
 }
 .inv-stepper button:active { background:#3a4060; }
 .inv-count { font-size:18px; font-weight:700; color:var(--text); min-width:20px; text-align:center; }
-
-/* Reset */
 .reset-btn {
   width:100%; margin-top:16px; padding:14px;
   background:transparent; border:1px solid var(--border2);
@@ -164,16 +194,19 @@ html, body {
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
     </div>
-    <div class="barbell-icon">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <rect x="1" y="11" width="3" height="4" rx="1" fill="#4f8ef7"/>
-        <rect x="4" y="9" width="2.5" height="8" rx="1" fill="#4f8ef7" opacity="0.8"/>
-        <rect x="6.5" y="7" width="2" height="12" rx="1" fill="#4f8ef7" opacity="0.6"/>
-        <rect x="8.5" y="12" width="9" height="2" rx="1" fill="#4f8ef7" opacity="0.5"/>
-        <rect x="17.5" y="7" width="2" height="12" rx="1" fill="#4f8ef7" opacity="0.6"/>
-        <rect x="19.5" y="9" width="2.5" height="8" rx="1" fill="#4f8ef7" opacity="0.8"/>
-        <rect x="22" y="11" width="3" height="4" rx="1" fill="#4f8ef7"/>
-      </svg>
+    <div class="header-right">
+      <button class="fullscreen-btn" id="btnFS" title="Full screen">⛶</button>
+      <div class="barbell-icon">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="1" y="11" width="3" height="4" rx="1" fill="#4f8ef7"/>
+          <rect x="4" y="9" width="2.5" height="8" rx="1" fill="#4f8ef7" opacity="0.8"/>
+          <rect x="6.5" y="7" width="2" height="12" rx="1" fill="#4f8ef7" opacity="0.6"/>
+          <rect x="8.5" y="12" width="9" height="2" rx="1" fill="#4f8ef7" opacity="0.5"/>
+          <rect x="17.5" y="7" width="2" height="12" rx="1" fill="#4f8ef7" opacity="0.6"/>
+          <rect x="19.5" y="9" width="2.5" height="8" rx="1" fill="#4f8ef7" opacity="0.8"/>
+          <rect x="22" y="11" width="3" height="4" rx="1" fill="#4f8ef7"/>
+        </svg>
+      </div>
     </div>
   </div>
 
@@ -189,26 +222,52 @@ html, body {
     </div>
   </div>
 
+  <!-- Barbell columns -->
   <div class="cols">
-    <div class="bar-col" id="col45">
-      <div class="col-head"><h2>45 lb bar</h2><span>Olympic bar</span></div>
-      <div class="stat"><span class="slabel">Total plates</span><div class="sval dim" id="tp45">— lbs</div></div>
-      <div class="stat"><span class="slabel">Per side</span><div class="sval dim" id="ps45">— lbs</div></div>
+    <div class="bar-col" id="col44">
+      <div class="col-head">
+        <h2>Olympic Bar</h2>
+        <div class="bar-name">(REP Colorado Bar)</div>
+        <div class="bar-weight">44 lbs (20 kg)</div>
+      </div>
+      <div class="stat"><span class="slabel">Total plates</span><div class="sval dim" id="tp44">— lbs</div></div>
+      <div class="stat"><span class="slabel">Per side</span><div class="sval dim" id="ps44">— lbs</div></div>
       <div class="plates-area">
-        <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge45"></span></div>
-        <div class="chips" id="chips45"><span class="chip-none">enter weight above</span></div>
-        <div id="approx45"></div>
+        <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge44"></span></div>
+        <div class="chips" id="chips44"><span class="chip-none">enter weight above</span></div>
+        <div id="approx44"></div>
       </div>
     </div>
-    <div class="bar-col" id="col35">
-      <div class="col-head"><h2>35 lb bar</h2><span>Standard bar</span></div>
-      <div class="stat"><span class="slabel">Total plates</span><div class="sval dim" id="tp35">— lbs</div></div>
-      <div class="stat"><span class="slabel">Per side</span><div class="sval dim" id="ps35">— lbs</div></div>
-      <div class="plates-area">
-        <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge35"></span></div>
-        <div class="chips" id="chips35"><span class="chip-none">enter weight above</span></div>
-        <div id="approx35"></div>
+    <div class="bar-col" id="col33">
+      <div class="col-head">
+        <h2>Standard Bar</h2>
+        <div class="bar-name">(Rogue Bella Bar 2.0)</div>
+        <div class="bar-weight">33 lbs (15 kg)</div>
       </div>
+      <div class="stat"><span class="slabel">Total plates</span><div class="sval dim" id="tp33">— lbs</div></div>
+      <div class="stat"><span class="slabel">Per side</span><div class="sval dim" id="ps33">— lbs</div></div>
+      <div class="plates-area">
+        <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge33"></span></div>
+        <div class="chips" id="chips33"><span class="chip-none">enter weight above</span></div>
+        <div id="approx33"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leg developer section -->
+  <div class="leg-section" id="legSection">
+    <div class="leg-head">
+      <div class="leg-head-icon">🦵</div>
+      <div class="leg-head-text">
+        <h2>Leg Developer</h2>
+        <div class="leg-sub">Freak Athlete ABX — single horn</div>
+      </div>
+      <span id="legBadge" style="margin-left:auto;"></span>
+    </div>
+    <div class="leg-chips-row">
+      <div class="leg-chips-top"><span class="plabel">Plates on horn</span></div>
+      <div class="chips" id="legChips"><span class="chip-none">enter weight above</span></div>
+      <div id="legApprox"></div>
     </div>
   </div>
 
@@ -283,6 +342,11 @@ var INV_IDS  = ['i45','i35','i25','i10','i5','i2h'];
 var INV_VALS = [45,35,25,10,5,2.5];
 var INV_DEFS = [2,2,2,4,2,2];
 
+var BARS = [
+  { suffix:'44', weight:44, label:'Olympic Bar',  name:'REP Colorado Bar',    kg:'20 kg' },
+  { suffix:'33', weight:33, label:'Standard Bar', name:'Rogue Bella Bar 2.0', kg:'15 kg' }
+];
+
 function getInv() {
   var inv = {};
   for (var i=0; i<INV_IDS.length; i++)
@@ -292,93 +356,106 @@ function getInv() {
 
 function stepInv(id, delta) {
   var el = document.getElementById(id);
-  var v  = parseInt(el.textContent) || 0;
-  var nv = Math.max(0, v + delta);
-  el.textContent = nv;
-  saveInv();
-  update();
+  el.textContent = Math.max(0, (parseInt(el.textContent)||0) + delta);
+  saveInv(); update();
 }
 
 function findPlates(target, inv) {
-  var rem = Math.round(target * 10), plates = [];
+  var rounded = Math.round(target / 2.5) * 2.5;
+  var rem = Math.round(rounded * 10);
+  var plates = [];
   for (var i=0; i<PLATES.length; i++) {
     var p=PLATES[i], pInt=Math.round(p*10);
     var use=Math.min(inv[p]||0, Math.floor(rem/pInt));
     for (var j=0; j<use; j++) plates.push(p);
     rem -= use*pInt;
   }
-  return {plates:plates, exact:rem===0, leftover:rem/10};
+  return {plates:plates, exact:rem===0, leftover:rem/10, rounded:rounded};
 }
 
 function fmt(n) { return (n%1===0)?String(n):n.toFixed(1); }
 
-function updateCol(suffix, barWeight, totalWeight) {
-  var col     = document.getElementById('col'+suffix);
-  var tpEl    = document.getElementById('tp'+suffix);
-  var psEl    = document.getElementById('ps'+suffix);
-  var badgeEl = document.getElementById('badge'+suffix);
-  var chipsEl = document.getElementById('chips'+suffix);
-  var approxEl= document.getElementById('approx'+suffix);
+function buildChips(plates) {
+  var h='';
+  for (var i=0;i<plates.length;i++)
+    h+='<span class="chip '+CHIP_CLS[plates[i]]+'">'+plates[i]+'</span>';
+  return h;
+}
 
-  if (!totalWeight || totalWeight <= 0) {
+function updateCol(bar, totalWeight) {
+  var s=bar.suffix, bw=bar.weight;
+  var col=document.getElementById('col'+s);
+  var tpEl=document.getElementById('tp'+s);
+  var psEl=document.getElementById('ps'+s);
+  var badgeEl=document.getElementById('badge'+s);
+  var chipsEl=document.getElementById('chips'+s);
+  var approxEl=document.getElementById('approx'+s);
+
+  if (!totalWeight||totalWeight<=0) {
     col.className='bar-col';
     tpEl.className='sval dim'; tpEl.textContent='— lbs';
     psEl.className='sval dim'; psEl.textContent='— lbs';
-    badgeEl.innerHTML='';
-    chipsEl.innerHTML='<span class="chip-none">enter weight above</span>';
+    badgeEl.innerHTML=''; chipsEl.innerHTML='<span class="chip-none">enter weight above</span>';
     approxEl.innerHTML=''; return;
   }
-  if (totalWeight < barWeight) {
+  if (totalWeight<bw) {
     col.className='bar-col';
     tpEl.className='sval err'; tpEl.textContent='below bar weight';
     psEl.className='sval dim'; psEl.textContent='—';
-    badgeEl.innerHTML='';
-    chipsEl.innerHTML='<span class="chip-err">Too light for this bar</span>';
+    badgeEl.innerHTML=''; chipsEl.innerHTML='<span class="chip-err">Too light for this bar</span>';
     approxEl.innerHTML=''; return;
   }
-
   col.className='bar-col active';
-  var totalPlate=totalWeight-barWeight, perSide=totalPlate/2;
-  tpEl.className='sval'; tpEl.textContent=fmt(totalPlate)+' lbs';
+  var totalPlate=totalWeight-bw;
+  var totalPlateR=Math.round(totalPlate/5)*5;
+  var perSide=totalPlateR/2;
+  tpEl.className='sval'; tpEl.textContent=fmt(totalPlateR)+' lbs';
   psEl.className='sval accent'; psEl.textContent=fmt(perSide)+' lbs';
-
   if (perSide===0) {
-    badgeEl.innerHTML='';
-    chipsEl.innerHTML='<span class="bar-only">Bar only — no plates needed</span>';
+    badgeEl.innerHTML=''; chipsEl.innerHTML='<span class="bar-only">Bar only — no plates needed</span>';
     approxEl.innerHTML=''; return;
   }
-
   var inv=getInv(), res=findPlates(perSide,inv);
-  var actualPerSide=perSide-res.leftover, actualTotal=actualPerSide*2+barWeight;
+  var actualPS=res.rounded-res.leftover, actualT=actualPS*2+bw;
+  badgeEl.innerHTML=res.exact?'<span class="badge badge-exact">EXACT</span>':'<span class="badge badge-approx">~'+fmt(actualT)+' lbs</span>';
+  chipsEl.innerHTML=res.plates.length?buildChips(res.plates):'<span class="chip-err">No solution with current inventory</span>';
+  approxEl.innerHTML=(!res.exact&&res.plates.length)?'<div class="approx-note">Closest: '+fmt(actualPS)+' lbs/side</div>':'';
+}
 
-  badgeEl.innerHTML = res.exact
-    ? '<span class="badge badge-exact">EXACT</span>'
-    : '<span class="badge badge-approx">~'+fmt(actualTotal)+' lbs</span>';
-
-  if (!res.plates.length) {
-    chipsEl.innerHTML='<span class="chip-err">No solution with current inventory</span>';
-  } else {
-    var h='';
-    for (var i=0;i<res.plates.length;i++)
-      h+='<span class="chip '+CHIP_CLS[res.plates[i]]+'">'+res.plates[i]+'</span>';
-    chipsEl.innerHTML=h;
+function updateLeg(totalWeight) {
+  var sec=document.getElementById('legSection');
+  var badgeEl=document.getElementById('legBadge');
+  var chipsEl=document.getElementById('legChips');
+  var approxEl=document.getElementById('legApprox');
+  if (!totalWeight||totalWeight<=0) {
+    sec.className='leg-section';
+    badgeEl.innerHTML=''; chipsEl.innerHTML='<span class="chip-none">enter weight above</span>';
+    approxEl.innerHTML=''; return;
   }
-  approxEl.innerHTML=(!res.exact&&res.plates.length)
-    ?'<div class="approx-note">Closest: '+fmt(actualPerSide)+' lbs/side</div>':'';
+  sec.className='leg-section active';
+  var hornWeight=Math.round(totalWeight/5)*5;
+  if (hornWeight===0) {
+    badgeEl.innerHTML=''; chipsEl.innerHTML='<span class="bar-only">No plates needed</span>';
+    approxEl.innerHTML=''; return;
+  }
+  var inv=getInv(), res=findPlates(hornWeight,inv);
+  var actual=res.rounded-res.leftover;
+  badgeEl.innerHTML=res.exact?'<span class="badge badge-exact">EXACT</span>':'<span class="badge badge-approx">~'+fmt(actual)+' lbs</span>';
+  chipsEl.innerHTML=res.plates.length?buildChips(res.plates):'<span class="chip-err">No solution with current inventory</span>';
+  approxEl.innerHTML=(!res.exact&&res.plates.length)?'<div class="approx-note">Closest: '+fmt(actual)+' lbs</div>':'';
 }
 
 function update() {
   var val=parseFloat(document.getElementById('totalWeight').value)||0;
-  updateCol('45',45,val);
-  updateCol('35',35,val);
+  for (var i=0;i<BARS.length;i++) updateCol(BARS[i],val);
+  updateLeg(val);
 }
 
 function saveInv() {
   try {
     var obj={};
-    for (var i=0;i<INV_IDS.length;i++)
-      obj[INV_IDS[i]]=document.getElementById(INV_IDS[i]).textContent;
-    localStorage.setItem('pc_inv', JSON.stringify(obj));
+    for (var i=0;i<INV_IDS.length;i++) obj[INV_IDS[i]]=document.getElementById(INV_IDS[i]).textContent;
+    localStorage.setItem('pc_inv',JSON.stringify(obj));
   } catch(e) {}
 }
 function loadInv() {
@@ -387,15 +464,12 @@ function loadInv() {
     if (!saved) return;
     var obj=JSON.parse(saved);
     for (var i=0;i<INV_IDS.length;i++)
-      if (obj[INV_IDS[i]] !== undefined)
-        document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];
+      if (obj[INV_IDS[i]]!==undefined) document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];
   } catch(e) {}
 }
-
 function resetAll() {
   document.getElementById('totalWeight').value='';
-  for (var i=0;i<INV_IDS.length;i++)
-    document.getElementById(INV_IDS[i]).textContent=INV_DEFS[i];
+  for (var i=0;i<INV_IDS.length;i++) document.getElementById(INV_IDS[i]).textContent=INV_DEFS[i];
   saveInv(); update();
 }
 
@@ -411,6 +485,25 @@ btnDn.addEventListener('touchstart',function(e){e.preventDefault();},{passive:fa
 btnDn.addEventListener('touchend',stepDn,{passive:false});
 btnDn.addEventListener('click',stepDn);
 document.getElementById('totalWeight').addEventListener('input',update);
+
+// Full screen button
+var btnFS=document.getElementById('btnFS');
+function toggleFS(e) {
+  if(e) e.preventDefault();
+  var el=document.documentElement;
+  if (!document.fullscreenElement&&!document.webkitFullscreenElement) {
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    btnFS.textContent='⊠';
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    btnFS.textContent='⛶';
+  }
+}
+btnFS.addEventListener('touchstart',function(e){e.preventDefault();},{passive:false});
+btnFS.addEventListener('touchend',toggleFS,{passive:false});
+btnFS.addEventListener('click',toggleFS);
 
 loadInv();
 update();
