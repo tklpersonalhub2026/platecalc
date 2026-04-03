@@ -46,7 +46,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 .steppers button:active { background:#ccd8f0; }
 
 /* Three equal bar columns */
-.cols { display:table; width:100%; table-layout:fixed; border-spacing:16px 0; margin-left:-16px; }
+.cols { display:table; width:calc(100% + 0px); table-layout:fixed; border-spacing:16px 0; }
 .bar-col { display:table-cell; background:var(--card-bg); border:2px solid var(--card-border); border-radius:18px; overflow:hidden; vertical-align:top; width:33.33%; }
 .bar-col.active { border-color:var(--card-accent); border-width:3px; }
 .col-head { background:var(--card-header); padding:14px 16px; border-bottom:1.5px solid var(--card-border); }
@@ -115,7 +115,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     <div>
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
-      <p style="font-size:11px;color:#3a4060;margin-top:2px;">v1.5</p>
+      <p style="font-size:11px;color:#3a4060;margin-top:2px;">v1.6</p>
     </div>
     <div class="barbell-icon">
       <svg viewBox="0 0 26 26" fill="none">
