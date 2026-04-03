@@ -77,6 +77,8 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 .chip-err  { font-size:15px; color:var(--card-red); font-weight:600; }
 .bar-only  { font-size:15px; color:var(--card-green); font-style:italic; font-weight:600; }
 .approx-note { font-size:13px; color:var(--card-amber); font-weight:600; margin-top:8px; }
+.delta-over  { font-size:13px; font-weight:700; color:#166534; }
+.delta-under { font-size:13px; font-weight:700; color:#991b1b; }
 
 /* Leg developer — full width below columns */
 .leg-section { background:var(--leg-bg); border:2px solid var(--leg-border); border-radius:18px; overflow:hidden; }
@@ -115,7 +117,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     <div>
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
-      <p style="font-size:11px;color:#3a4060;margin-top:2px;">v1.6</p>
+      <p style="font-size:11px;color:#3a4060;margin-top:2px;">v1.7</p>
     </div>
     <div class="barbell-icon">
       <svg viewBox="0 0 26 26" fill="none">
@@ -149,7 +151,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
         <div class="bar-name">(REP Colorado Bar)</div>
         <div class="bar-weight">44 lbs (20 kg)</div>
       </div>
-      <div class="stat"><span class="slabel">Total plates</span><span class="sval dim" id="tp44">&#8212; lbs</span></div>
+      <div class="stat" style="display:flex;align-items:baseline;justify-content:space-between;"><div><span class="slabel">Total plates</span><span class="sval dim" id="tp44">&#8212; lbs</span></div><span id="delta44"></span></div>
       <div class="stat"><span class="slabel">Per side</span><span class="sval dim" id="ps44">&#8212; lbs</span></div>
       <div class="plates-area">
         <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge44"></span></div>
@@ -163,7 +165,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
         <div class="bar-name">(Rogue Bella Bar 2.0)</div>
         <div class="bar-weight">33 lbs (15 kg)</div>
       </div>
-      <div class="stat"><span class="slabel">Total plates</span><span class="sval dim" id="tp33">&#8212; lbs</span></div>
+      <div class="stat" style="display:flex;align-items:baseline;justify-content:space-between;"><div><span class="slabel">Total plates</span><span class="sval dim" id="tp33">&#8212; lbs</span></div><span id="delta33"></span></div>
       <div class="stat"><span class="slabel">Per side</span><span class="sval dim" id="ps33">&#8212; lbs</span></div>
       <div class="plates-area">
         <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge33"></span></div>
@@ -177,7 +179,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
         <div class="bar-name">(ForceUSA C20)</div>
         <div class="bar-weight">35.5 lbs (16 kg)</div>
       </div>
-      <div class="stat"><span class="slabel">Total plates</span><span class="sval dim" id="tp35">&#8212; lbs</span></div>
+      <div class="stat" style="display:flex;align-items:baseline;justify-content:space-between;"><div><span class="slabel">Total plates</span><span class="sval dim" id="tp35">&#8212; lbs</span></div><span id="delta35"></span></div>
       <div class="stat"><span class="slabel">Per side</span><span class="sval dim" id="ps35">&#8212; lbs</span></div>
       <div class="plates-area">
         <div class="plates-top"><span class="plabel">Plates per side</span><span id="badge35"></span></div>
@@ -275,7 +277,7 @@ var CHIP_CLS={45:"c45",35:"c35",25:"c25",10:"c10",5:"c5",2.5:"c25s"};
 var INV_IDS=["i45","i35","i25","i10","i5","i2h"];
 var INV_VALS=[45,35,25,10,5,2.5];
 var INV_DEFS=[2,2,2,4,2,2];
-var BARS=[{suffix:"44",weight:44},{suffix:"33",weight:33},{suffix:"35",weight:35.5}];
+var BARS=[{suffix:"44",weight:44,exact:44.092},{suffix:"33",weight:33,exact:33.069},{suffix:"35",weight:35.5,exact:35.274}];
 function getInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=parseInt(document.getElementById(INV_IDS[i]).textContent)||0;return inv;}
 function stepInv(id,delta){var el=document.getElementById(id);el.textContent=Math.max(0,(parseInt(el.textContent)||0)+delta);saveInv();update();}
 function findPlates(target,inv){var rounded=Math.round(target/2.5)*2.5,rem=Math.round(rounded*10),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*10),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/10,rounded:rounded};}
@@ -289,11 +291,20 @@ function updateCol(bar,tv){
   var badgeEl=document.getElementById("badge"+s);
   var chipsEl=document.getElementById("chips"+s);
   var approxEl=document.getElementById("approx"+s);
-  if(!tv||tv<=0){col.className="bar-col";tpEl.className="sval dim";tpEl.textContent="\u2014 lbs";psEl.className="sval dim";psEl.textContent="\u2014 lbs";badgeEl.innerHTML="";chipsEl.innerHTML='<span class="chip-none">enter weight above</span>';approxEl.innerHTML="";return;}
-  if(tv<bw){col.className="bar-col";tpEl.className="sval err";tpEl.textContent="below bar weight";psEl.className="sval dim";psEl.textContent="\u2014";badgeEl.innerHTML="";chipsEl.innerHTML='<span class="chip-err">Too light for this bar</span>';approxEl.innerHTML="";return;}
+  if(!tv||tv<=0){col.className="bar-col";tpEl.className="sval dim";tpEl.textContent="\u2014 lbs";psEl.className="sval dim";psEl.textContent="\u2014 lbs";badgeEl.innerHTML="";chipsEl.innerHTML='<span class="chip-none">enter weight above</span>';approxEl.innerHTML="";var dEl=document.getElementById("delta"+s);if(dEl)dEl.innerHTML="";return;}
+  if(tv<bw){col.className="bar-col";tpEl.className="sval err";tpEl.textContent="below bar weight";psEl.className="sval dim";psEl.textContent="\u2014";badgeEl.innerHTML="";chipsEl.innerHTML='<span class="chip-err">Too light for this bar</span>';approxEl.innerHTML="";var dEl2=document.getElementById("delta"+s);if(dEl2)dEl2.innerHTML="";return;}
   col.className="bar-col active";
   var tp=Math.round((tv-bw)/5)*5,ps=tp/2;
   tpEl.className="sval";tpEl.textContent=fmt(tp)+" lbs";
+  // Delta: actual total (exact bar + rounded plates) vs recommended
+  var deltaEl=document.getElementById("delta"+s);
+  if(deltaEl){
+    var actualTotal=bar.exact+tp;
+    var delta=Math.round((actualTotal-tv)*100)/100;
+    if(delta===0){deltaEl.innerHTML="";}
+    else if(delta>0){deltaEl.innerHTML='<span class="delta-over">+'+delta.toFixed(2)+' lbs</span>';}
+    else{deltaEl.innerHTML='<span class="delta-under">'+delta.toFixed(2)+' lbs</span>';}
+  }
   psEl.className="sval accent";psEl.textContent=fmt(ps)+" lbs";
   if(ps===0){badgeEl.innerHTML="";chipsEl.innerHTML='<span class="bar-only">Bar only</span>';approxEl.innerHTML="";return;}
   var inv=getInv(),res=findPlates(ps,inv),aPS=res.rounded-res.leftover,aT=aPS*2+bw;
