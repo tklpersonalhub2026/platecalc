@@ -146,7 +146,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     <div>
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
-      <p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.17</p>
+      <p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.18</p>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="weather-widget" id="weatherWidget">
@@ -315,6 +315,8 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     </div>
   </div>
 
+  <button class="reset-btn" ontouchstart="event.preventDefault()" ontouchend="debugCalc()" onclick="debugCalc()" style="margin-bottom:8px;color:#4f8ef7;border-color:#4f8ef7;">Debug calculation</button>
+  <div id="debugOut" style="background:#1a1d26;border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:10px;font-size:11px;color:#f0f2f8;font-family:monospace;white-space:pre-wrap;display:none;margin-bottom:8px;"></div>
   <button class="reset-btn" ontouchstart="event.preventDefault()" ontouchend="clearWeight()" onclick="clearWeight()">Clear weight</button>
 
 </div>
@@ -376,6 +378,40 @@ function updateLeg(tv){
 }
 function update(){var val=parseFloat(document.getElementById("totalWeight").value)||0;for(var i=0;i<BARS.length;i++)updateCol(BARS[i],val);updateLeg(val);}
 function saveInv(){try{var obj={};for(var i=0;i<INV_IDS.length;i++)obj[INV_IDS[i]]=document.getElementById(INV_IDS[i]).textContent;localStorage.setItem("pc_inv_ipad",JSON.stringify(obj));}catch(e){}}
+
+function debugCalc() {
+  var out = document.getElementById('debugOut');
+  out.style.display = 'block';
+  var tv = parseFloat(document.getElementById('totalWeight').value) || 0;
+  var inv = getInv();
+  var lines = [];
+  lines.push('=== INVENTORY ===');
+  lines.push('i45='+document.getElementById('i45').textContent);
+  lines.push('i35='+document.getElementById('i35').textContent);
+  lines.push('i25='+document.getElementById('i25').textContent);
+  lines.push('i10='+document.getElementById('i10').textContent);
+  lines.push('i5='+document.getElementById('i5').textContent);
+  lines.push('i2h='+document.getElementById('i2h').textContent);
+  lines.push('i125='+document.getElementById('i125').textContent);
+  lines.push('');
+  lines.push('=== getInv() ===');
+  lines.push(JSON.stringify(inv));
+  lines.push('');
+  lines.push('=== CALC (Olympic, bw=44) ===');
+  lines.push('tv='+tv);
+  var tp = Math.round((tv-44)/2.5)*2.5;
+  var ps = tp/2;
+  lines.push('tp='+tp+', ps='+ps);
+  var res = findPlates(ps, inv);
+  lines.push('rounded='+res.rounded);
+  lines.push('plates='+JSON.stringify(res.plates));
+  lines.push('exact='+res.exact);
+  lines.push('leftover='+res.leftover);
+  lines.push('');
+  lines.push('=== localStorage ===');
+  try { lines.push(localStorage.getItem('pc_inv_ipad') || 'null'); } catch(e) { lines.push('error'); }
+  out.textContent = lines.join('\n');
+}
 function loadInv(){
   try{
     var saved=localStorage.getItem("pc_inv_ipad");
