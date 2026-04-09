@@ -146,7 +146,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     <div>
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
-      <p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.14</p>
+      <p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.17</p>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <div class="weather-widget" id="weatherWidget">
@@ -342,7 +342,7 @@ function updateCol(bar,tv){
   if(!tv||tv<=0){col.className="bar-col";tpEl.className="sval dim";tpEl.textContent="\u2014 lbs";psEl.className="sval dim";psEl.textContent="\u2014 lbs";badgeEl.innerHTML="";chipsEl.innerHTML='<span class="chip-none">enter weight above</span>';approxEl.innerHTML="";var dEl=document.getElementById("delta"+s);if(dEl)dEl.innerHTML="";return;}
   if(tv<bw){col.className="bar-col";tpEl.className="sval err";tpEl.textContent="below bar weight";psEl.className="sval dim";psEl.textContent="\u2014";badgeEl.innerHTML="";chipsEl.innerHTML='<span class="chip-err">Too light for this bar</span>';approxEl.innerHTML="";var dEl2=document.getElementById("delta"+s);if(dEl2)dEl2.innerHTML="";return;}
   col.className="bar-col active";
-  var tp=Math.round((tv-bw)/5)*5,ps=tp/2;
+  var tp=Math.round((tv-bw)/2.5)*2.5,ps=tp/2;
   tpEl.className="sval";tpEl.textContent=fmt(tp)+" lbs";
   // Delta: actual total (exact bar + rounded plates) vs recommended
   var deltaEl=document.getElementById("delta"+s);
@@ -376,7 +376,17 @@ function updateLeg(tv){
 }
 function update(){var val=parseFloat(document.getElementById("totalWeight").value)||0;for(var i=0;i<BARS.length;i++)updateCol(BARS[i],val);updateLeg(val);}
 function saveInv(){try{var obj={};for(var i=0;i<INV_IDS.length;i++)obj[INV_IDS[i]]=document.getElementById(INV_IDS[i]).textContent;localStorage.setItem("pc_inv_ipad",JSON.stringify(obj));}catch(e){}}
-function loadInv(){try{var saved=localStorage.getItem("pc_inv_ipad");if(!saved)return;var obj=JSON.parse(saved);for(var i=0;i<INV_IDS.length;i++)if(obj[INV_IDS[i]]!==undefined)document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];}catch(e){}}
+function loadInv(){
+  try{
+    var saved=localStorage.getItem("pc_inv_ipad");
+    if(!saved)return;
+    var obj=JSON.parse(saved);
+    var allPresent=true;
+    for(var i=0;i<INV_IDS.length;i++){if(obj[INV_IDS[i]]===undefined){allPresent=false;break;}}
+    if(!allPresent){localStorage.removeItem("pc_inv_ipad");return;}
+    for(var i=0;i<INV_IDS.length;i++)document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];
+  }catch(e){}
+}
 function clearWeight(){document.getElementById("totalWeight").value="";update();}
 function stepUp(e){if(e)e.preventDefault();var el=document.getElementById("totalWeight");el.value=(parseFloat(el.value)||0)+5;update();}
 function stepDn(e){if(e)e.preventDefault();var el=document.getElementById("totalWeight");el.value=Math.max(0,(parseFloat(el.value)||0)-5);update();}

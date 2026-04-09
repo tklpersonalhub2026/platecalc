@@ -126,6 +126,9 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 .inv-stepper button:active { background:#3a4060; }
 .inv-count { font-size:18px; font-weight:700; color:var(--text); min-width:20px; text-align:center; }
 .clear-btn { width:100%; padding:14px; background:transparent; border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--muted); font-size:14px; font-weight:500; cursor:pointer; touch-action:manipulation; }
+.weather-line { font-size:12px; color:#8a94b0; margin-top:3px; letter-spacing:0.1px; }
+.weather-line .wtemp { color:#f0f2f8; font-weight:700; }
+.weather-line .wprecip { color:#7dd3fc; }
 .clear-btn:active { background:var(--surface2); color:var(--text); }
 </style>
 </head>
@@ -136,7 +139,8 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     <div>
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
-      <p class="header-sub">v2.6</p>
+      <p class="header-sub">v2.11</p>
+      <p class="weather-line" id="weatherLine"><span style="color:#8a94b0;font-style:italic;">Loading weather...</span></p>
     </div>
     <div class="barbell-icon">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
@@ -345,7 +349,7 @@ var BARS=[
 function getInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=parseInt(document.getElementById(INV_IDS[i]).textContent)||0;return inv;}
 function getLegInv(){var inv=getInv();inv[1.25]=0;return inv;}
 function stepInv(id,delta){var el=document.getElementById(id);el.textContent=Math.max(0,(parseInt(el.textContent)||0)+delta);saveInv();update();}
-function findPlates(target,inv){var rounded=Math.round(target/2.5)*2.5,rem=Math.round(rounded*10),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*10),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/10,rounded:rounded};}
+function findPlates(target,inv){var rounded=Math.round(target/1.25)*1.25,rem=Math.round(rounded*100),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*100),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/100,rounded:rounded};}
 function fmt(n){return(n%1===0)?String(n):n.toFixed(1);}
 function buildChips(plates){var h="";for(var i=0;i<plates.length;i++)h+='<span class="chip '+CHIP_CLS[plates[i]]+'">'+plates[i]+'</span>';return h;}
 
@@ -374,7 +378,7 @@ function updateCol(bar,tv){
   }
   // Add active class
   if(col.className.indexOf("active")===-1) col.className+=" active";
-  var tp=Math.round((tv-bw)/5)*5,ps=tp/2;
+  var tp=Math.round((tv-bw)/2.5)*2.5,ps=tp/2;
   tpEl.className="sval";tpEl.textContent=fmt(tp)+" lbs";
   psEl.className="sval accent";psEl.textContent=fmt(ps)+" lbs";
   // Delta
@@ -409,7 +413,17 @@ function updateLeg(tv){
 
 function update(){var val=parseFloat(document.getElementById("totalWeight").value)||0;for(var i=0;i<BARS.length;i++)updateCol(BARS[i],val);updateLeg(val);}
 function saveInv(){try{var obj={};for(var i=0;i<INV_IDS.length;i++)obj[INV_IDS[i]]=document.getElementById(INV_IDS[i]).textContent;localStorage.setItem("pc_inv",JSON.stringify(obj));}catch(e){}}
-function loadInv(){try{var saved=localStorage.getItem("pc_inv");if(!saved)return;var obj=JSON.parse(saved);for(var i=0;i<INV_IDS.length;i++)if(obj[INV_IDS[i]]!==undefined)document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];}catch(e){}}
+function loadInv(){
+  try{
+    var saved=localStorage.getItem("pc_inv");
+    if(!saved)return;
+    var obj=JSON.parse(saved);
+    var allPresent=true;
+    for(var i=0;i<INV_IDS.length;i++){if(obj[INV_IDS[i]]===undefined){allPresent=false;break;}}
+    if(!allPresent){localStorage.removeItem("pc_inv");return;}
+    for(var i=0;i<INV_IDS.length;i++)document.getElementById(INV_IDS[i]).textContent=obj[INV_IDS[i]];
+  }catch(e){}
+}
 function clearWeight(){document.getElementById("totalWeight").value="";update();}
 function stepUp(e){if(e)e.preventDefault();var el=document.getElementById("totalWeight");el.value=(parseFloat(el.value)||0)+5;update();}
 function stepDn(e){if(e)e.preventDefault();var el=document.getElementById("totalWeight");el.value=Math.max(0,(parseFloat(el.value)||0)-5);update();}
@@ -421,7 +435,53 @@ btnDn.addEventListener("touchstart",function(e){e.preventDefault();},{passive:fa
 btnDn.addEventListener("touchend",stepDn,{passive:false});
 btnDn.addEventListener("click",stepDn);
 document.getElementById("totalWeight").addEventListener("input",update);
-loadInv();update();
+
+function loadWeather() {
+  var el = document.getElementById('weatherLine');
+  if (!navigator.geolocation) {
+    el.innerHTML = '<span style="color:#8a94b0;font-style:italic;">No location</span>';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude.toFixed(4);
+    var lon = pos.coords.longitude.toFixed(4);
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+      +'&current=temperature_2m,weathercode'
+      +'&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      +'&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch'
+      +'&timezone=auto&forecast_days=1';
+    fetch(url).then(function(r){return r.json();}).then(function(d){
+      var cur  = Math.round(d.current.temperature_2m);
+      var hi   = Math.round(d.daily.temperature_2m_max[0]);
+      var lo   = Math.round(d.daily.temperature_2m_min[0]);
+      var prec = d.daily.precipitation_probability_max[0];
+      var code = d.current.weathercode;
+      var cond = weatherDesc(code);
+      el.innerHTML =
+        '<span class="wtemp">'+cur+'&#176;F</span>'
+        +' <span>'+cond+'</span>'
+        +' &nbsp;H:'+hi+'&#176; L:'+lo+'&#176;'
+        +' &nbsp;<span class="wprecip">&#9831;'+prec+'%</span>';
+    }).catch(function(){
+      el.innerHTML = '<span style="color:#8a94b0;font-style:italic;">Weather unavailable</span>';
+    });
+  }, function(){
+    el.innerHTML = '<span style="color:#8a94b0;font-style:italic;">Location denied</span>';
+  }, {timeout:8000});
+}
+function weatherDesc(code) {
+  if (code===0) return 'Clear';
+  if (code<=2) return 'Partly cloudy';
+  if (code===3) return 'Overcast';
+  if (code<=49) return 'Foggy';
+  if (code<=59) return 'Drizzle';
+  if (code<=69) return 'Rain';
+  if (code<=79) return 'Snow';
+  if (code<=84) return 'Rain showers';
+  if (code<=94) return 'Thunderstorm';
+  return 'Stormy';
+}
+loadInv();update();loadWeather();
 </script>
 </body>
 </html>
