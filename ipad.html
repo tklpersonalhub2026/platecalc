@@ -31,6 +31,17 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 .header h1 { font-size:44px; font-weight:800; letter-spacing:-1px; color:var(--text); line-height:1; }
 .header p  { font-size:18px; color:var(--muted); margin-top:4px; }
 .barbell-icon { width:56px; height:56px; border-radius:14px; background:rgba(79,142,247,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.weather-widget {
+  display:flex; flex-direction:column; align-items:flex-end; gap:1px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; padding:6px 10px; flex-shrink:0;
+  min-width:110px;
+}
+.weather-temp { font-size:22px; font-weight:700; color:var(--text); letter-spacing:-0.5px; line-height:1; }
+.weather-hi-lo { font-size:11px; color:var(--muted); margin-top:2px; }
+.weather-precip { font-size:11px; color:#7dd3fc; margin-top:1px; }
+.weather-cond { font-size:11px; color:var(--muted); margin-top:1px; }
+.weather-loading { font-size:11px; color:var(--muted); font-style:italic; }
 .barbell-icon svg { width:34px; height:34px; }
 
 /* Input card */
@@ -110,6 +121,22 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 /* Reset */
 .reset-btn { width:100%; padding:18px; background:transparent; border:1px solid var(--border2); border-radius:14px; color:var(--muted); font-size:17px; font-weight:500; cursor:pointer; touch-action:manipulation; }
 .reset-btn:active { background:var(--surface2); color:var(--text); }
+
+/* Header title — ensure original colors */
+.header h1 { font-size:44px; font-weight:800; letter-spacing:-1px; color:#f0f2f8; line-height:1; }
+.header p  { font-size:18px; color:#8a94b0; margin-top:4px; }
+
+/* Weather widget */
+.weather-widget {
+  display:flex; flex-direction:column; align-items:flex-end; gap:2px;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+  border-radius:12px; padding:8px 12px; flex-shrink:0; min-width:120px;
+}
+.weather-temp { font-size:24px; font-weight:700; color:#f0f2f8; letter-spacing:-0.5px; line-height:1; }
+.weather-cond { font-size:12px; color:#8a94b0; }
+.weather-hi-lo { font-size:12px; color:#8a94b0; }
+.weather-precip { font-size:12px; color:#7dd3fc; }
+.weather-loading { font-size:12px; color:#8a94b0; font-style:italic; }
 </style>
 </head>
 <body>
@@ -119,10 +146,14 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
     <div>
       <h1>Plate Calculator</h1>
       <p>For Fitbod barbell lifts</p>
-      <p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.12</p>
+      <p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.14</p>
     </div>
-    <div class="barbell-icon">
-      <svg viewBox="0 0 26 26" fill="none">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="weather-widget" id="weatherWidget">
+        <span class="weather-loading">Loading weather...</span>
+      </div>
+      <div class="barbell-icon">
+        <svg viewBox="0 0 26 26" fill="none">
         <rect x="1" y="11" width="3" height="4" rx="1" fill="#4f8ef7"/>
         <rect x="4" y="9" width="2.5" height="8" rx="1" fill="#4f8ef7" opacity="0.8"/>
         <rect x="6.5" y="7" width="2" height="12" rx="1" fill="#4f8ef7" opacity="0.6"/>
@@ -131,6 +162,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
         <rect x="19.5" y="9" width="2.5" height="8" rx="1" fill="#4f8ef7" opacity="0.8"/>
         <rect x="22" y="11" width="3" height="4" rx="1" fill="#4f8ef7"/>
       </svg>
+      </div>
     </div>
   </div>
 
@@ -296,7 +328,7 @@ var BARS=[{suffix:"44",weight:44,exact:44.092},{suffix:"33",weight:33,exact:33.0
 function getInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=parseInt(document.getElementById(INV_IDS[i]).textContent)||0;return inv;}
 function getLegInv(){var inv=getInv();inv[1.25]=0;return inv;}
 function stepInv(id,delta){var el=document.getElementById(id);el.textContent=Math.max(0,(parseInt(el.textContent)||0)+delta);saveInv();update();}
-function findPlates(target,inv){var rounded=Math.round(target/2.5)*2.5,rem=Math.round(rounded*10),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*10),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/10,rounded:rounded};}
+function findPlates(target,inv){var rounded=Math.round(target/1.25)*1.25,rem=Math.round(rounded*100),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*100),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/100,rounded:rounded};}
 function fmt(n){return(n%1===0)?String(n):n.toFixed(1);}
 function buildChips(plates){var h="";for(var i=0;i<plates.length;i++)h+='<span class="chip '+CHIP_CLS[plates[i]]+'">'+plates[i]+'</span>';return h;}
 function updateCol(bar,tv){
@@ -356,7 +388,54 @@ btnDn.addEventListener("touchstart",function(e){e.preventDefault();},{passive:fa
 btnDn.addEventListener("touchend",stepDn,{passive:false});
 btnDn.addEventListener("click",stepDn);
 document.getElementById("totalWeight").addEventListener("input",update);
-loadInv();update();
+
+// Weather using Open-Meteo (free, no API key) + browser geolocation
+function loadWeather() {
+  var w = document.getElementById('weatherWidget');
+  if (!navigator.geolocation) {
+    w.innerHTML = '<span class="weather-loading">No location</span>';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    var lat = pos.coords.latitude.toFixed(4);
+    var lon = pos.coords.longitude.toFixed(4);
+    var url = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
+      +'&current=temperature_2m,weathercode'
+      +'&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      +'&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch'
+      +'&timezone=auto&forecast_days=1';
+    fetch(url).then(function(r){return r.json();}).then(function(d){
+      var cur  = Math.round(d.current.temperature_2m);
+      var hi   = Math.round(d.daily.temperature_2m_max[0]);
+      var lo   = Math.round(d.daily.temperature_2m_min[0]);
+      var prec = d.daily.precipitation_probability_max[0];
+      var code = d.current.weathercode;
+      var cond = weatherDesc(code);
+      w.innerHTML =
+        '<span class="weather-temp">'+cur+'&#176;F</span>'+
+        '<span class="weather-cond">'+cond+'</span>'+
+        '<span class="weather-hi-lo">H:'+hi+'&#176; &nbsp; L:'+lo+'&#176;</span>'+
+        '<span class="weather-precip">&#9831; '+prec+'% precip</span>';
+    }).catch(function(){
+      w.innerHTML = '<span class="weather-loading">Weather unavailable</span>';
+    });
+  }, function(){
+    w.innerHTML = '<span class="weather-loading">Location denied</span>';
+  }, {timeout:8000});
+}
+function weatherDesc(code) {
+  if (code===0) return 'Clear';
+  if (code<=2) return 'Partly cloudy';
+  if (code===3) return 'Overcast';
+  if (code<=49) return 'Foggy';
+  if (code<=59) return 'Drizzle';
+  if (code<=69) return 'Rain';
+  if (code<=79) return 'Snow';
+  if (code<=84) return 'Rain showers';
+  if (code<=94) return 'Thunderstorm';
+  return 'Stormy';
+}
+loadInv();update();loadWeather();
 </script>
 </body>
 </html>
