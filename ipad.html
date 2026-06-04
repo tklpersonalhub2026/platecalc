@@ -127,7 +127,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 <div>
 <h1>Plate Calculator</h1>
 <p>For Fitbod barbell lifts</p>
-<p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.20</p>
+<p style="font-size:13px;color:#7a8099;margin-top:3px;font-weight:600;">v1.21</p>
 <p class="weather-line" id="weatherLine"><span style="color:#8a94b0;font-style:italic;">Loading weather...</span></p>
 </div>
 <div class="barbell-icon">
@@ -327,6 +327,8 @@ var BARS=[{suffix:"44",weight:44,exact:44.092},{suffix:"33",weight:33,exact:33.0
 var LAND_EFF=22; // effective bar weight for landmine (lever physics: half of 44 lb bar)
 
 function getInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=parseInt(document.getElementById(INV_IDS[i]).textContent)||0;return inv;}
+// For barbell bars (bilateral): each plate used per side requires 2 physical plates total
+function getBarInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=Math.floor((parseInt(document.getElementById(INV_IDS[i]).textContent)||0)/2);return inv;}
 function getLegInv(){var inv=getInv();inv[1.25]=0;return inv;}
 function stepInv(id,delta){var el=document.getElementById(id);el.textContent=Math.max(0,(parseInt(el.textContent)||0)+delta);saveInv();update();}
 function findPlates(target,inv){var rounded=Math.round(target/1.25)*1.25,rem=Math.round(rounded*100),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*100),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/100,rounded:rounded};}
@@ -356,7 +358,7 @@ else{deltaEl.innerHTML='<span class="delta-under">'+delta.toFixed(2)+' lbs</span
 }
 psEl.className="sval accent";psEl.textContent=fmt(ps)+" lbs";
 if(ps===0){badgeEl.innerHTML="";chipsEl.innerHTML='<span class="bar-only">Bar only</span>';approxEl.innerHTML="";return;}
-var inv=getInv(),res=findPlates(ps,inv),aPS=res.rounded-res.leftover,aT=aPS*2+bw;
+var inv=getBarInv(),res=findPlates(ps,inv),aPS=res.rounded-res.leftover,aT=aPS*2+bw;
 badgeEl.innerHTML=res.exact?'<span class="badge badge-exact">EXACT</span>':'<span class="badge badge-approx">~'+fmt(aT)+' lbs</span>';
 chipsEl.innerHTML=res.plates.length?buildChips(res.plates):'<span class="chip-err">No solution</span>';
 approxEl.innerHTML=(!res.exact&&res.plates.length)?'<div class="approx-note">Closest: '+fmt(aPS)+' lbs/side</div>':"";
