@@ -142,7 +142,7 @@ html, body { background:var(--bg); color:var(--text); font-family:-apple-system,
 <div>
 <h1>Plate Calculator</h1>
 <p>For Fitbod barbell lifts</p>
-<p class="header-sub">v2.12</p>
+<p class="header-sub">v2.13</p>
 <p class="weather-line" id="weatherLine"><span style="color:#8a94b0;font-style:italic;">Loading weather...</span></p>
 </div>
 <div class="barbell-icon">
@@ -368,9 +368,11 @@ var BARS=[
 {suffix:"33",weight:33,exact:33.069},
 {suffix:"35",weight:35.5,exact:35.274}
 ];
-var LAND_EFF=22; // effective bar weight for landmine (lever physics: half of 44 lb bar)
+var LAND_EFF=22;
 
 function getInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=parseInt(document.getElementById(INV_IDS[i]).textContent)||0;return inv;}
+// For barbell bars (bilateral): each plate used per side requires 2 physical plates total
+function getBarInv(){var inv={};for(var i=0;i<INV_IDS.length;i++)inv[INV_VALS[i]]=Math.floor((parseInt(document.getElementById(INV_IDS[i]).textContent)||0)/2);return inv;}
 function getLegInv(){var inv=getInv();inv[1.25]=0;return inv;}
 function stepInv(id,delta){var el=document.getElementById(id);el.textContent=Math.max(0,(parseInt(el.textContent)||0)+delta);saveInv();update();}
 function findPlates(target,inv){var rounded=Math.round(target/1.25)*1.25,rem=Math.round(rounded*100),plates=[];for(var i=0;i<PLATES.length;i++){var p=PLATES[i],pInt=Math.round(p*100),use=Math.min(inv[p]||0,Math.floor(rem/pInt));for(var j=0;j<use;j++)plates.push(p);rem-=use*pInt;}return{plates:plates,exact:rem===0,leftover:rem/100,rounded:rounded};}
@@ -412,7 +414,7 @@ else if(delta>0){deltaEl.innerHTML='<span class="delta-over">+'+delta.toFixed(2)
 else{deltaEl.innerHTML='<span class="delta-under">'+delta.toFixed(2)+' lbs</span>';}
 }
 if(ps===0){badgeEl.innerHTML="";chipsEl.innerHTML='<span class="bar-only">Bar only</span>';approxEl.innerHTML="";return;}
-var inv=getInv(),res=findPlates(ps,inv),aPS=res.rounded-res.leftover,aT=aPS*2+bw;
+var inv=getBarInv(),res=findPlates(ps,inv),aPS=res.rounded-res.leftover,aT=aPS*2+bw;
 badgeEl.innerHTML=res.exact?'<span class="badge badge-exact">EXACT</span>':'<span class="badge badge-approx">~'+fmt(aT)+' lbs</span>';
 chipsEl.innerHTML=res.plates.length?buildChips(res.plates):'<span class="chip-err">No solution</span>';
 approxEl.innerHTML=(!res.exact&&res.plates.length)?'<div class="approx-note">Closest: '+fmt(aPS)+' lbs/side</div>':"";
@@ -498,7 +500,7 @@ function fetchWeatherFromCoords(lat, lon, city, el) {
 var WEATHER_TTL=60*60*1000;
 try{
 var w=JSON.parse(localStorage.getItem('pc_weather'));
-if(w&&w.html&&(Date.now()-w.ts)<WEATHER_TTL){return;} // weather still fresh
+if(w&&w.html&&(Date.now()-w.ts)<WEATHER_TTL){return;}
 }catch(e){}
 var url='https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon
 +'&current=temperature_2m,weathercode'
@@ -520,7 +522,6 @@ try{localStorage.setItem('pc_weather',JSON.stringify({html:html,ts:Date.now()}))
 }).catch(function(){if(!el.innerHTML||el.innerHTML.indexOf('Loading')!==-1)el.innerHTML='<span style="color:#8a94b0;font-style:italic;">Weather unavailable</span>';});
 }
 function resolveAndFetch(lat, lon, el) {
-// Reuse cached city name if we haven't moved more than ~5 km
 try{
 var c=JSON.parse(localStorage.getItem('pc_coords'));
 if(c&&c.city!==undefined&&Math.abs(c.lat-parseFloat(lat))<0.05&&Math.abs(c.lon-parseFloat(lon))<0.05){
@@ -528,7 +529,6 @@ try{localStorage.setItem('pc_coords',JSON.stringify({lat:lat,lon:lon,city:c.city
 fetchWeatherFromCoords(lat,lon,c.city,el);return;
 }
 }catch(e){}
-// New location — reverse geocode for city name (OpenStreetMap, free, no key)
 fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lon+'&format=json&zoom=10&accept-language=en')
 .then(function(r){return r.json();}).then(function(d){
 var city=d.address.city||d.address.town||d.address.village||d.address.county||'';
@@ -541,10 +541,7 @@ fetchWeatherFromCoords(lat,lon,'',el);
 }
 function loadWeather() {
 var el=document.getElementById('weatherLine');
-// Always show cached weather instantly — no blank, no delay
 try{var w=JSON.parse(localStorage.getItem('pc_weather'));if(w&&w.html)el.innerHTML=w.html;}catch(e){}
-// Try geolocation every open — silent if permission already granted, prompt only first time ever
-// maximumAge:300000 lets browser return a cached GPS fix (faster, avoids any edge-case prompt)
 if(!navigator.geolocation){
 try{var c=JSON.parse(localStorage.getItem('pc_coords'));if(c&&c.lat)fetchWeatherFromCoords(c.lat,c.lon,c.city||'',el);}catch(e){}
 return;
@@ -554,7 +551,6 @@ var lat=pos.coords.latitude.toFixed(4);
 var lon=pos.coords.longitude.toFixed(4);
 resolveAndFetch(lat,lon,el);
 },function(){
-// Denied — fall back to stored coords so weather still shows
 try{var c=JSON.parse(localStorage.getItem('pc_coords'));if(c&&c.lat)fetchWeatherFromCoords(c.lat,c.lon,c.city||'',el);}catch(e){}
 },{timeout:8000,maximumAge:300000});
 }
